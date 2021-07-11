@@ -12,6 +12,7 @@ const HARVEST_POOLS = process.env.HARVEST_POOLS;
 const REINVEST_POOL = process.env.REINVEST_POOL;
 const INTERVAL_HR = process.env.INTERVAL_HR;
 const GAS_TOPUP = process.env.GAS_TOPUP;
+const GAS_LIMIT = process.env.GAS_LIMIT;
 
 const web3 = new Web3(RPC_URL);
 const account = web3.eth.accounts.wallet.add(PRIVATE_KEY);
@@ -20,6 +21,7 @@ const fishToken = new web3.eth.Contract(FishToken, ContractAddress["FishToken"])
 
 const intervalHr = parseInt(INTERVAL_HR);
 const gasTopup = parseInt(GAS_TOPUP);
+const gasLimit = parseInt(GAS_LIMIT);
 
 const harvestPools = [];
 for (let harvestPool of HARVEST_POOLS.split(',')) {
@@ -34,7 +36,7 @@ const reinvest = async () => {
         try {
             await polycatMasterChef.methods.deposit(harvestPool, 0, REFFERAL_ADDRESS).send({
                 gasPrice: gasPrice.toString(),
-                gas: 20000000,
+                gas: gasLimit,
                 from: account.address
             }).on('transactionHash', function (transactionHash) {
                 console.log(`Harvest from pool ${harvestPool}: ${transactionHash} (${web3.utils.fromWei(gasPrice, 'gwei')} Gwei)`);
@@ -43,7 +45,6 @@ const reinvest = async () => {
             console.error("Transaction Error")
             console.error(err.message);
         }
-        
     }
 
     const fishBalance = new web3.utils.BN(await fishToken.methods.balanceOf(account.address).call());
@@ -52,7 +53,7 @@ const reinvest = async () => {
         try {
             await polycatMasterChef.methods.deposit(reinvestPool, fishBalance, "0x0000000000000000000000000000000000000000").send({
                 gasPrice: gasPrice.toString(),
-                gas: 20000000,
+                gas: gasLimit,
                 from: account.address
             }).on('transactionHash', function (transactionHash) {
                 console.log(`Reinvest to pool ${reinvestPool} (${web3.utils.fromWei(fishBalance)} FISH): ${transactionHash} (${web3.utils.fromWei(gasPrice, 'gwei')} Gwei)`);
