@@ -11,6 +11,7 @@ const REFFERAL_ADDRESS = process.env.REFFERAL_ADDRESS;
 const HARVEST_POOLS = process.env.HARVEST_POOLS;
 const REINVEST_POOL = process.env.REINVEST_POOL;
 const INTERVAL_HR = process.env.INTERVAL_HR;
+const GAS_TOPUP = process.env.GAS_TOPUP;
 
 const web3 = new Web3(RPC_URL);
 const account = web3.eth.accounts.wallet.add(PRIVATE_KEY);
@@ -18,6 +19,7 @@ const polycatMasterChef = new web3.eth.Contract(PolycatMasterChef, ContractAddre
 const fishToken = new web3.eth.Contract(FishToken, ContractAddress["FishToken"]);
 
 const intervalHr = parseInt(INTERVAL_HR);
+const gasTopup = parseInt(GAS_TOPUP);
 
 const harvestPools = [];
 for (let harvestPool of HARVEST_POOLS.split(',')) {
@@ -28,7 +30,7 @@ const reinvestPool = parseInt(REINVEST_POOL);
 const reinvest = async () => {
     console.log("Reinvest !!");
     for (let harvestPool of harvestPools) {
-        const gasPrice = (new web3.utils.BN(await web3.eth.getGasPrice())).add(new web3.utils.BN(10000000000));
+        const gasPrice = (new web3.utils.BN(await web3.eth.getGasPrice())).add(new web3.utils.BN(gasTopup));
         try {
             await polycatMasterChef.methods.deposit(harvestPool, 0, REFFERAL_ADDRESS).send({
                 gasPrice: gasPrice.toString(),
@@ -46,7 +48,7 @@ const reinvest = async () => {
 
     const fishBalance = new web3.utils.BN(await fishToken.methods.balanceOf(account.address).call());
     if (fishBalance.gt(0)) {
-        const gasPrice = (new web3.utils.BN(await web3.eth.getGasPrice())).add(new web3.utils.BN(10000000000));
+        const gasPrice = (new web3.utils.BN(await web3.eth.getGasPrice())).add(new web3.utils.BN(gasTopup));
         try {
             await polycatMasterChef.methods.deposit(reinvestPool, fishBalance, "0x0000000000000000000000000000000000000000").send({
                 gasPrice: gasPrice.toString(),
