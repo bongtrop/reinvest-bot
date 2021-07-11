@@ -40,8 +40,8 @@ const reinvestPool = parseInt(REINVEST_POOL);
 
 const reinvest = async () => {
     console.log(`[${new Date()}] Reinvest !!`);
-    // Harvest from Polycat
     const gasPrice = (new web3.utils.BN(await web3.eth.getGasPrice())).add(new web3.utils.BN(gasTopup));
+    // Harvest from Polycat
     for (let harvestPool of harvestPools) {
         if (isNaN(harvestPool)) continue;
         try {
@@ -60,26 +60,22 @@ const reinvest = async () => {
 
     if (HARVEST_MATIC) {
         // Harvest WMATIC from Wault Pool
-        {
-            const gasPrice = (new web3.utils.BN(await web3.eth.getGasPrice())).add(new web3.utils.BN(gasTopup));
-            try {
-                await waultPool.methods.claim().send({
-                    gasPrice: gasPrice.toString(),
-                    gas: GAS_LIMIT,
-                    from: account.address
-                }).on('transactionHash', function (transactionHash) {
-                    console.log(`Harvest from Wault: ${transactionHash} (${web3.utils.fromWei(gasPrice, 'gwei')} Gwei)`);
-                });
-            } catch (err) {
-                console.error("Transaction Error")
-                console.error(err.message);
-            }
+        try {
+            await waultPool.methods.claim().send({
+                gasPrice: gasPrice.toString(),
+                gas: GAS_LIMIT,
+                from: account.address
+            }).on('transactionHash', function (transactionHash) {
+                console.log(`Harvest from Wault: ${transactionHash} (${web3.utils.fromWei(gasPrice, 'gwei')} Gwei)`);
+            });
+        } catch (err) {
+            console.error("Transaction Error")
+            console.error(err.message);
         }
 
         // Unwrap WMATIC to MATIC
         const wmaticBalance = new web3.utils.BN(await wmaticToken.methods.balanceOf(account.address).call());
         if (wmaticBalance.gt(0)) {
-            const gasPrice = (new web3.utils.BN(await web3.eth.getGasPrice())).add(new web3.utils.BN(gasTopup));
             try {
                 await wmaticToken.methods.withdraw(wmaticBalance).send({
                     gasPrice: gasPrice.toString(),
@@ -99,7 +95,6 @@ const reinvest = async () => {
     if (reinvestPool === 1) {
         const fishBalance = new web3.utils.BN(await fishToken.methods.balanceOf(account.address).call());
         if (fishBalance.gt(0)) {
-            const gasPrice = (new web3.utils.BN(await web3.eth.getGasPrice())).add(new web3.utils.BN(gasTopup));
             try {
                 await polycatMasterChef.methods.deposit(reinvestPool, fishBalance, "0x0000000000000000000000000000000000000000").send({
                     gasPrice: gasPrice.toString(),
@@ -119,7 +114,6 @@ const reinvest = async () => {
         // Add FISH-WMATIC Liquidity
         const fishBalance = new web3.utils.BN(await fishToken.methods.balanceOf(account.address).call());
         if (fishBalance.gt(0)) {
-            const gasPrice = (new web3.utils.BN(await web3.eth.getGasPrice())).add(new web3.utils.BN(gasTopup));
             try {
                 // Calculate the amount of MATIC needed for the available FISH
                 const reserves = await fishLPToken.methods.getReserves().call();
@@ -144,7 +138,6 @@ const reinvest = async () => {
         // Stake FISH-WMATIC LP into Polycat
         const fishLPBalance = new web3.utils.BN(await fishLPToken.methods.balanceOf(account.address).call());
         if (fishLPBalance.gt(0)) {
-            const gasPrice = (new web3.utils.BN(await web3.eth.getGasPrice())).add(new web3.utils.BN(gasTopup));
             try {
                 await polycatMasterChef.methods.deposit(reinvestPool, fishBalance, "0x0000000000000000000000000000000000000000").send({
                     gasPrice: gasPrice.toString(),
