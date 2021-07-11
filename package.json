@@ -1,5 +1,5 @@
 {
-  "name": "flashloan-detect",
+  "name": "reinvest-bot",
   "version": "1.0.0",
   "main": "src/bot.js",
   "author": "bongtrop <bongtrop@gmail.com>",
