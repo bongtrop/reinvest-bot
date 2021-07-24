@@ -139,7 +139,7 @@ const reinvest = async () => {
         const fishLPBalance = new web3.utils.BN(await fishLPToken.methods.balanceOf(account.address).call());
         if (fishLPBalance.gt(0)) {
             try {
-                await polycatMasterChef.methods.deposit(reinvestPool, fishBalance, "0x0000000000000000000000000000000000000000").send({
+                await polycatMasterChef.methods.deposit(reinvestPool, fishLPBalance, "0x0000000000000000000000000000000000000000").send({
                     gasPrice: gasPrice.toString(),
                     gas: GAS_LIMIT,
                     from: account.address
